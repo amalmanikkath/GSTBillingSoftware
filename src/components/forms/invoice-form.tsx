@@ -206,27 +206,28 @@ export function InvoiceForm() {
             
             <div className="space-y-4">
               <div className="grid grid-cols-12 gap-4 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                <div className="col-span-5 text-left">Item Description</div>
-                <div className="col-span-2 text-center">Qty</div>
+                <div className="col-span-4 text-left">Item Description</div>
+                <div className="col-span-1 text-center">Qty</div>
                 <div className="col-span-2 text-right">Price</div>
+                <div className="col-span-2 text-center">GST %</div>
                 <div className="col-span-2 text-right">Total</div>
                 <div className="col-span-1"></div>
               </div>
 
               {fields.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-12 gap-4 items-start group">
-                  <div className="col-span-5">
+                  <div className="col-span-4">
                     <input 
                       {...register(`items.${index}.itemId`)}
                       placeholder="Search or add item..."
                       className="w-full bg-secondary/20 border border-border/40 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50"
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <input 
                       type="number"
                       {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                      className="w-full bg-secondary/20 border border-border/40 rounded-xl px-4 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full bg-secondary/20 border border-border/40 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                   </div>
                   <div className="col-span-2">
@@ -235,6 +236,18 @@ export function InvoiceForm() {
                       {...register(`items.${index}.unitPrice`, { valueAsNumber: true })}
                       className="w-full bg-secondary/20 border border-border/40 rounded-xl px-4 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
+                  </div>
+                  <div className="col-span-2">
+                    <select
+                      {...register(`items.${index}.taxRate`, { valueAsNumber: true })}
+                      className="w-full bg-secondary/20 border border-border/40 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value={0}>0%</option>
+                      <option value={5}>5%</option>
+                      <option value={12}>12%</option>
+                      <option value={18}>18%</option>
+                      <option value={28}>28%</option>
+                    </select>
                   </div>
                   <div className="col-span-2 py-2 text-sm font-bold text-right">
                     {formatCurrency(watchedItems[index]?.total || 0)}
