@@ -49,7 +49,15 @@ export function InvoiceForm() {
     address: "Parakulam, Kunissery, 680561",
     gstin: "23435sdfdsf234234"
   });
-  
+
+  const [customers, setCustomers] = useState([
+    { id: "c1", name: "Reliance Retail", gstin: "27AAAAA0000A1Z5", state: 27 },
+    { id: "c2", name: "Tata Motors", gstin: "27BBBBB0000B1Z5", state: 27 },
+  ]);
+
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({ name: "", gstin: "", state: 32 });
+
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
@@ -107,6 +115,16 @@ export function InvoiceForm() {
     alert("Invoice Draft Saved Successfully!");
   };
 
+  const handleAddCustomer = () => {
+    if (!newCustomer.name) return;
+    const id = `c${customers.length + 1}`;
+    setCustomers([...customers, { ...newCustomer, id }]);
+    setValue("customerId", id);
+    setValue("placeOfSupply", newCustomer.state);
+    setIsAddCustomerOpen(false);
+    setNewCustomer({ name: "", gstin: "", state: 32 });
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between border-b border-border/40 pb-6">
@@ -139,14 +157,29 @@ export function InvoiceForm() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground">SELECT CUSTOMER</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Select Customer</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddCustomerOpen(true)}
+                    className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" /> Add New
+                  </button>
+                </div>
                 <select 
                   {...register("customerId")}
                   className="w-full bg-secondary/30 border border-border/40 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                  onChange={(e) => {
+                    const cust = customers.find(c => c.id === e.target.value);
+                    if (cust) setValue("placeOfSupply", cust.state);
+                    register("customerId").onChange(e);
+                  }}
                 >
                   <option value="">Select a customer...</option>
-                  <option value="c1">Reliance Retail (GST: 27AAAAA0000A1Z5)</option>
-                  <option value="c2">Tata Motors (GST: 27BBBBB0000B1Z5)</option>
+                  {customers.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} (GST: {c.gstin})</option>
+                  ))}
                 </select>
                 {errors.customerId && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customerId.message}</p>}
               </div>
@@ -292,6 +325,68 @@ export function InvoiceForm() {
           </button>
         </div>
       </div>
+
+      {/* Add Customer Modal */}
+      {isAddCustomerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="glass-card w-full max-w-md p-8 rounded-3xl space-y-6 shadow-2xl border border-white/10 slide-in-from-bottom-8">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold">Add New Customer</h2>
+              <p className="text-sm text-muted-foreground">Enter the customer details below</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase">Customer Name</label>
+                <input
+                  className="w-full bg-secondary/30 border border-border/40 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  placeholder="E.g. Malanad Oil Mills"
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase">GST Number</label>
+                <input
+                  className="w-full bg-secondary/30 border border-border/40 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase"
+                  placeholder="32AAAAA0000A1Z5"
+                  value={newCustomer.gstin}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, gstin: e.target.value.toUpperCase() })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase">State</label>
+                <select
+                  className="w-full bg-secondary/30 border border-border/40 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  value={newCustomer.state}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, state: parseInt(e.target.value) })}
+                >
+                  <option value={32}>32 - Kerala</option>
+                  <option value={27}>27 - Maharashtra</option>
+                  <option value={29}>29 - Karnataka</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setIsAddCustomerOpen(false)}
+                className="flex-1 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:bg-secondary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddCustomer}
+                className="flex-1 py-3 rounded-xl text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 transition-all"
+              >
+                Create Customer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
